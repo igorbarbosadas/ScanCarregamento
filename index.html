@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Renomeador de Carregamentos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap brand">
+      <div class="brand-mark">RC</div>
+      <div>
+        <h1>Renomeador de Carregamentos</h1>
+        <p>Placa do Relatório + conferência no Mapa + data de “Impresso por”</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card intro">
+      <div>
+        <h2>Envie os PDFs escaneados</h2>
+        <p>O sistema usa a placa da página “Relatório de Carregamento”, compara com a placa do “Mapa de Carregamento” e usa a data da linha “Impresso por”.</p>
+      </div>
+      <div class="rule">Formato: <strong>PLACA - DD.MM.pdf</strong></div>
+    </section>
+
+    <section id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Selecionar arquivos PDF">
+      <div class="upload-icon">↑</div>
+      <h3>Arraste seus PDFs aqui</h3>
+      <p>ou clique no botão abaixo</p>
+      <label for="fileInput" class="btn primary upload-label">Selecionar arquivos</label>
+      <input id="fileInput" class="file-input" type="file" accept=".pdf,application/pdf" multiple>
+      <small>Você pode selecionar vários PDFs de uma vez.</small>
+    </section>
+
+    <div id="errorBox" class="error-box hidden"></div>
+
+    <section id="progressBox" class="card hidden">
+      <div class="progress-header">
+        <strong id="progressText">Preparando...</strong>
+        <span id="progressCount"></span>
+      </div>
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+    </section>
+
+    <section id="resultsSection" class="card hidden">
+      <div class="section-head">
+        <div>
+          <h2>Arquivos processados</h2>
+          <p>A placa usada no nome vem do Relatório de Carregamento.</p>
+        </div>
+        <div class="actions">
+          <button id="clearBtn" class="btn secondary" type="button">Limpar</button>
+          <button id="zipBtn" class="btn primary" type="button">Baixar todos em ZIP</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Arquivo original</th>
+              <th>Placa relatório</th>
+              <th>Placa mapa</th>
+              <th>Data</th>
+              <th>Novo nome</th>
+              <th>Status</th>
+              <th>Conferir</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <template id="rowTemplate">
+    <tr>
+      <td class="original"></td>
+      <td><input class="plate-input" maxlength="8"></td>
+      <td class="map-plate"></td>
+      <td><input class="date-input" placeholder="DD/MM/AAAA" maxlength="10"></td>
+      <td class="new-name"></td>
+      <td><span class="status"></span></td>
+      <td><button class="btn mini preview-btn" type="button">Abrir arquivo</button></td>
+      <td><button class="btn mini download-btn" type="button">Baixar</button></td>
+    </tr>
+  </template>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+
+  <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="document-modal">
+      <div class="document-modal-head">
+        <div>
+          <h2 id="modalTitle">Conferir arquivo</h2>
+          <p id="modalFileName"></p>
+        </div>
+        <button id="closeModalX" class="icon-btn" type="button" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="document-preview-wrap">
+        <div id="pdfCanvasWrap" class="pdf-canvas-wrap">
+          <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+        </div>
+        <div id="previewFallback" class="preview-fallback hidden">
+          <strong>Não foi possível exibir o PDF.</strong>
+          <p>Você ainda pode conferir as placas abaixo e escolher a informação correta.</p>
+        </div>
+      </div>
+
+      <div class="pdf-toolbar">
+        <button id="prevPage" class="btn secondary" type="button">Página anterior</button>
+        <span id="pageInfo">Página 1 de 1</span>
+        <button id="nextPage" class="btn secondary" type="button">Próxima página</button>
+      </div>
+
+      <div class="document-modal-footer">
+        <div class="divergence-info">
+          <span>Placa do relatório: <strong id="reportPlateValue">---</strong></span>
+          <span>Placa do mapa: <strong id="mapPlateValue">---</strong></span>
+        </div>
+
+        <div class="footer-actions">
+          <button id="chooseReport" class="btn secondary" type="button">Usar placa do relatório</button>
+          <button id="chooseMap" class="btn secondary" type="button">Usar placa do mapa</button>
+
+          <div class="manual-inline">
+            <input id="manualPlate" maxlength="8" placeholder="Digite a placa">
+            <button id="confirmManual" class="btn primary" type="button">Usar placa digitada</button>
+          </div>
+
+          <button id="cancelModal" class="btn ghost" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
